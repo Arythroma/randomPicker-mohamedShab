@@ -23,6 +23,8 @@ function reducer(state, action) {
         result: action.payload,
         isPlaying: false,
       };
+    case "RESET":
+      return { ...state, result: null, isPlaying: false };
     default:
       return state;
   }
@@ -41,9 +43,9 @@ function RandomPicker() {
   function handleSubmit(e) {
     e.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed) return alert("no input");
+    if (!trimmed) return alert("Please enter a value");
     if (state.items.includes(trimmed))
-      return alert("item already exists");
+      return alert("Item already exists");
 
     dispatch({ type: "ADD", payload: trimmed });
     setInput("");
@@ -55,8 +57,13 @@ function RandomPicker() {
 
   function handlePlay() {
     if (state.items.length < 2)
-      return alert("minimum 2 items required to play");
+      return alert("At least 2 items are required to pick");
     dispatch({ type: "PLAY" });
+  }
+
+  function handleReset() {
+    dispatch({ type: "RESET" });
+    setCurrentDisplay("");
   }
 
   useEffect(() => {
@@ -83,10 +90,14 @@ function RandomPicker() {
 
   return (
     <div className="container">
-      <h2>
+      <h2 className={state.result ? "final-result" : ""}>
         {state.isPlaying
           ? currentDisplay || "..."
-          : state.result || "add items and pick one"}
+          : state.result
+          ? `🎉 ${state.result} 🎉`
+          : state.items.length === 0
+          ? "No items yet! Start adding some."
+          : "Ready to pick?"}
       </h2>
 
       {!state.isPlaying && (
@@ -106,7 +117,14 @@ function RandomPicker() {
             >
               Pick Random
             </button>
+            {state.result && (
+              <button type="button" onClick={handleReset}>
+                Reset
+              </button>
+            )}
           </form>
+
+          <p>Total items: {state.items.length}</p>
 
           <ul>
             {state.items.map((item) => (
