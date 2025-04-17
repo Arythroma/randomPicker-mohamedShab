@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 
 const initialState = {
-  items: [],
+  items: JSON.parse(localStorage.getItem("items")) || [],
   isPlaying: false,
   result: null,
 };
@@ -23,8 +23,6 @@ function reducer(state, action) {
         result: action.payload,
         isPlaying: false,
       };
-    case "RESET":
-      return { ...state, result: null, isPlaying: false };
     default:
       return state;
   }
@@ -40,12 +38,16 @@ function RandomPicker() {
   const [input, setInput] = useState("");
   const [currentDisplay, setCurrentDisplay] = useState("");
 
+  
+  useEffect(() => {
+    localStorage.setItem("items", JSON.stringify(state.items));
+  }, [state.items]);
+
   function handleSubmit(e) {
     e.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed) return alert("Please enter a value");
-    if (state.items.includes(trimmed))
-      return alert("Item already exists");
+    if (!trimmed) return alert("no input");
+    if (state.items.includes(trimmed)) return alert("item already exists");
 
     dispatch({ type: "ADD", payload: trimmed });
     setInput("");
@@ -57,13 +59,8 @@ function RandomPicker() {
 
   function handlePlay() {
     if (state.items.length < 2)
-      return alert("At least 2 items are required to pick");
+      return alert("minimum 2 items required to play");
     dispatch({ type: "PLAY" });
-  }
-
-  function handleReset() {
-    dispatch({ type: "RESET" });
-    setCurrentDisplay("");
   }
 
   useEffect(() => {
@@ -90,14 +87,10 @@ function RandomPicker() {
 
   return (
     <div className="container">
-      <h2 className={state.result ? "final-result" : ""}>
+      <h2>
         {state.isPlaying
           ? currentDisplay || "..."
-          : state.result
-          ? `🎉 ${state.result} 🎉`
-          : state.items.length === 0
-          ? "No items yet! Start adding some."
-          : "Ready to pick?"}
+          : state.result || "add items and pick one"}
       </h2>
 
       {!state.isPlaying && (
@@ -117,14 +110,7 @@ function RandomPicker() {
             >
               Pick Random
             </button>
-            {state.result && (
-              <button type="button" onClick={handleReset}>
-                Reset
-              </button>
-            )}
           </form>
-
-          <p>Total items: {state.items.length}</p>
 
           <ul>
             {state.items.map((item) => (
