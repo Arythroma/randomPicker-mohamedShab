@@ -23,6 +23,8 @@ function reducer(state, action) {
         result: action.payload,
         isPlaying: false,
       };
+    case "RESET":
+      return { ...initialState };
     default:
       return state;
   }
@@ -38,7 +40,6 @@ function RandomPicker() {
   const [input, setInput] = useState("");
   const [currentDisplay, setCurrentDisplay] = useState("");
 
-  
   useEffect(() => {
     localStorage.setItem("items", JSON.stringify(state.items));
   }, [state.items]);
@@ -61,6 +62,11 @@ function RandomPicker() {
     if (state.items.length < 2)
       return alert("minimum 2 items required to play");
     dispatch({ type: "PLAY" });
+  }
+
+  function handleReset() {
+    dispatch({ type: "RESET" });
+    localStorage.setItem("items", JSON.stringify([]));
   }
 
   useEffect(() => {
@@ -109,6 +115,12 @@ function RandomPicker() {
               disabled={state.items.length < 2}
             >
               Pick Random
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+            >
+              Reset
             </button>
           </form>
 
